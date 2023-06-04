@@ -1,0 +1,12 @@
+__pycache__
+.venv
+*.sqlite
+Backups/
+*.log
+test.txt
+side_work/
+docs/referens/OtherDiplomas/дипломек
+*.lnk
+instance/
+
+~$*
