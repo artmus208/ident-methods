@@ -3,13 +3,16 @@
 
 # TODO:
 # [x]: Подготовить методы для тестирования
-# [ ]: Протестировать методы
+# [x]: Протестировать методы
+# [ ]: Подготовить JSON-графика для Plotly
 
 
 from enum import Enum
 import control
 import numpy as np
 import scipy.linalg as linalg
+
+from grad import Grad
 
 class Methods(Enum):
     lsm = 1,
@@ -192,101 +195,4 @@ class IdentifyIt:
         return [self.num, self.den]
 
     def grad(self, t, y, degree=1):
-        X = [np.ones((1, degree + 1))[0], np.ones((1, degree + 1))[0]]
-        X[0][0] = 1e-6
-
-        def tfSysStep(_sys):
-            return control.step_response(_sys, np.linspace(0, 10, 100))
-
-        def error(_X):
-            _sys = control.tf(_X[:len(X[0])], _X[len(X[0]):])
-            t_pred, y_pred = control.step_response(_sys, np.linspace(t[0], t[-1], len(t)))
-
-            if (len(y_pred) != len(y)):
-                return -1
-
-            er = 0.0
-            for i in range(len(y)):
-                er = er + (y[i] - y_pred[i])**2
-            return er
-
-        def grad(_X):
-            G = np.zeros(len(_X))
-            XX = np.copy(_X)
-            eps = 0.0001
-            for i, x in enumerate(XX):
-                dx = 0.00001
-                if x != 0.0:
-                    dx = x * eps
-
-                XX[i] = _X[i] + dx
-                fb = error(XX)
-
-                XX[i] = _X[i] - dx
-                fa = error(XX)
-
-                XX[i] = _X[i]
-                G[i] = (fb-fa)/(2*dx)
-            return G
-
-        def min_fun_split(a, b, _X, _Gr):
-            xi = 0
-            k_max = 10
-
-            ai = a
-            bi = b
-            l = (b - a)*0.01
-
-            Xi = np.copy(_X)
-
-            while (abs(bi-ai) >= l and k_max > 0):
-                dx = (bi-ai)*0.001
-
-                pi = ((ai + bi) - dx) * 0.5
-                qi = ((ai + bi) + dx) * 0.5
-
-                for i, x in enumerate(Xi):
-                    Xi[i] = _X[i] - pi * Gr[i]
-                fp = error(Xi)
-
-                for i, x in enumerate(Xi):
-                    Xi[i] = _X[i] - qi * Gr[i]
-                fq = error(Xi)
-
-                if (fp < fq):
-                    bi = qi
-                else:
-                    ai = pi
-
-                k_max = k_max - 1
-            xi = (ai+bi) / 2.0
-            return xi
-
-        N = 0
-        X_i = np.concatenate([X[0], X[1]])
-        f_i = error(X_i)
-
-        N_max = 300
-        while (N < N_max):
-            Gr = grad(X_i)
-            a = -100.0
-            b = 100.0
-            for i in range(len(X_i)):
-                if (Gr[i] != 0 and X_i[i] != 0):
-                    alf1 = -X_i[i]/Gr[i]
-                    alf2 = 0.5*X_i[i]/Gr[i]
-                    a1 = min(alf1, alf2)
-                    b1 = max(alf1, alf2)
-                    a = max(a, a1)
-                    b = min(b, b1)
-
-            step = min_fun_split(a, b, X_i, Gr)
-
-            for i, x in enumerate(X_i):
-                X_i[i] = X_i[i] - step * Gr[i]
-
-            f_i = error(X_i)
-            N = N + 1
-        self.num = X_i[:len(X[0])]
-        self.den = X_i[len(X[0]):]
-        return [self.num, self.den]
+        g = Grad(t, y, degree)
