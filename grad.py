@@ -3,18 +3,18 @@ from control.matlab import *
 import matplotlib.pyplot as plt
 
 
-class Identification():
-    def __init__(self, filePath, initParams, KMAX = 100) -> None:
+class Grad():
+    def __init__(self, t, y, degree, KMAX = 100) -> None:
         # data load:
-        self.filePath = filePath
-        self.data = np.loadtxt(filePath, delimiter=',')
-        self.t = self.data[:,0]
-        self.h = self.data[:,1]
+        xx = [np.ones((1, degree + 1))[0], np.ones((1, degree + 1))[0]]
+        xx[0][0] = 1e-6
+        initParams = xx
+        self.t, self.h = t, y
         self.size = len(self.h)
         self.state = round(np.mean(self.h[int(0.2*self.size): ]))
         # coeffs load:
-        self.num = initParams[ :len(initParams)//2]
-        self.den = initParams[len(initParams)//2: ]
+        self.num = initParams[0]
+        self.den = initParams[1]
         self.numDim = len(self.num)
         self.denDim = len(self.den)
         self.X = np.concatenate([self.num, self.den])
@@ -111,7 +111,13 @@ class Identification():
         kmax = self.kmax
         k = 0
         epsCurrent = 1
-        while k < kmax and epsCurrent > eps:
+        while k < kmax:
+        # В этом цикле можно остановится по кол-ву повторений, а можно по
+        # величине относительной ошибки. Второе я убрал.
+        #   было: 
+        #       while k < kmax and epsCurrent > eps:
+        #   стало
+        #       while k < kmax and epsCurrent > eps:
             a = -10
             b = 10
             self.J = self.Gradient()
@@ -153,10 +159,11 @@ class Identification():
 
 if __name__ == '__main__':
     print("ЗАПУСК НЕ КАК МОДУЛЯ")
+    
     k = int(input("Введите максимальное кол-во итераций: "))
     Tparam = 0.05
     xi = 1.0
-    m = Identification('h.txt',[0.0000001, 0.0000001, 2, 0.000001, Tparam**2, 2*xi*Tparam, 1], KMAX = k)
+    m = Grad('test_data/h.txt', degree=3, KMAX = k)
     print(m.num, m.den)
     print("============Start Minim=============")
     coefs = m.GetMinimization()
