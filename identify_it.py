@@ -46,17 +46,6 @@ class IdentifyIt:
         3 - Градиентный метод.
 
     """
-    def __init__(self, x:list, y:list, degree:int, method:int):
-        self.x = x
-        self.y = y
-        self.degree = degree
-        self.method = method
-        self.tf_type = TF_TYPE["cont"]
-
-    def load_x_y_from_file(self, file_path):
-        """Загрузка экспериментальных данных из файла"""
-        self.x, self.y = np.loadtxt(file_path, delimiter=',', unpack=True)
-
     @property
     def method(self):
         return self._method
@@ -86,6 +75,34 @@ class IdentifyIt:
         if len(value) > self.degree:
             raise ValueError("Denumerator bigger than degree!")
         self._den = value
+
+    @property
+    def dt(self):
+        self._dt = self.x[2] - self.x[1]
+        return self._dt
+
+    @property
+    def model(self):
+        if self.iscont:
+            self._model = control.tf(self.num, self.den)
+        else:
+            self._model = control.tf(self.num, self.den, self.dt)
+        return self._model
+
+    @property
+    def y_m(self):
+        self.x_m, self._y_m = control.step_response(self.model, self.x[-1])
+
+    def __init__(self, x:list, y:list, degree:int, method:int):
+        self.x = x
+        self.y = y
+        self.degree = degree
+        self.method = method
+        self.iscont = True
+
+    def load_x_y_from_file(self, file_path):
+        """Загрузка экспериментальных данных из файла"""
+        self.x, self.y = np.loadtxt(file_path, delimiter=',', unpack=True)
 
 
     def validate_before_ident(self):
@@ -119,6 +136,7 @@ class IdentifyIt:
         x.insert(degree+1, 0)
         self.num = x[degree+1:] 
         self.den = x[:degree+1]
+        self.iscont = False
         return [self.num, self.den]
 
 
@@ -148,10 +166,8 @@ class IdentifyIt:
         f_t = np.transpose(f)
         left = np.dot(f_t, f)
         right = np.dot(f_t, Wd)
-
         A = linalg.solve(left, right)
         A = list(A)
-        #print(A)
         A.append(1)
         self.num = A[:degree]
         self.den = A[degree:]
