@@ -150,7 +150,7 @@ class Grad():
         return self.X
         
     def Info(self,tM,hM):
-        # self.GraphOut([[self.t,self.h,'Задание'],[tM,hM, 'Модель']])
+        self.GraphOut([[self.t,self.h,'Задание'],[tM,hM, 'Модель']])
         print('Вычисление завершено за ', self.currentK, ' иттераций')
         print('Ошибка относительно задания ', self.currentEps*100, ' %')
         print('Числитель ', self.MakeCoefs(self.X)[0])
@@ -159,11 +159,11 @@ class Grad():
 
 if __name__ == '__main__':
     print("ЗАПУСК НЕ КАК МОДУЛЯ")
-    
+    x, y = np.loadtxt('test_data/h.txt', delimiter=',', unpack=True)
     k = int(input("Введите максимальное кол-во итераций: "))
     Tparam = 0.05
     xi = 1.0
-    m = Grad('test_data/h.txt', degree=3, KMAX = k)
+    m = Grad(x, y, degree=3, KMAX = k)
     print(m.num, m.den)
     print("============Start Minim=============")
     coefs = m.GetMinimization()
