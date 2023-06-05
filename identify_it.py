@@ -57,8 +57,6 @@ class IdentifyIt:
     
     @num.setter
     def num(self, value):
-        # if len(value) > self.degree:
-        #     raise ValueError(f"Numerator bigger than degree!\n len(num):{len(value)}, degree:{self.degree}")
         self._num = value
         
     @property
@@ -67,8 +65,6 @@ class IdentifyIt:
     
     @den.setter
     def den(self, value):
-        # if len(value) > self.degree:
-        #     raise ValueError("Denumerator bigger than degree!")
         self._den = value
 
     @property
@@ -86,7 +82,7 @@ class IdentifyIt:
 
     @property
     def y_m(self):
-        self.x_m, self._y_m = control.step_response(self.model, self.x[-1])
+        self.x_m, self._y_m = control.step_response(self.model, np.linspace(self.x[0], self.x[-1], len(self.x)))
         return self._y_m
 
     @property
@@ -94,6 +90,9 @@ class IdentifyIt:
         if isinstance(self.y, np.ndarray) and isinstance(self.y_m, np.ndarray):
             return np.sum((self.y_m - self.y)**2)
         raise TypeError("Type mismath")
+
+    def __repr__(self) -> str:
+        return f"num:{self.num}\ndenum:{self.den}\nerror:{self.error}\nIs cont.:{self.iscont}"
 
     def __init__(self, x:list, y:list, degree:int, method:int):
         self.x = x
@@ -201,7 +200,7 @@ class IdentifyIt:
 
         def error(_X):
             _sys = control.tf(_X[:len(X[0])], _X[len(X[0]):])
-            t_pred, y_pred = control.step_response(_sys, t)
+            t_pred, y_pred = control.step_response(_sys, np.linspace(t[0], t[-1], len(t)))
 
             if (len(y_pred) != len(y)):
                 return -1
@@ -288,7 +287,6 @@ class IdentifyIt:
 
             f_i = error(X_i)
             N = N + 1
-            self.progress_value.emit(float(N) / N_max)
         self.num = X_i[:len(X[0])]
         self.den = X_i[len(X[0]):]
         return [self.num, self.den]
