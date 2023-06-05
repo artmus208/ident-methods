@@ -6,21 +6,16 @@
 # [ ]: Протестировать методы
 
 
-
+from enum import Enum
 import control
 import numpy as np
 import scipy.linalg as linalg
 
-TF_TYPE = {
-    "dicr": True,
-    "cont": False
-}
+class Methods(Enum):
+    lsm = 1,
+    vim = 2,
+    grad = 3
 
-METHOD = {
-    'lsm': 1,
-    'vim': 2,
-    'grad': 3
-}
 
 class IdentifyIt:
     """IdentifyIt(x, y, degree, method)
@@ -62,8 +57,8 @@ class IdentifyIt:
     
     @num.setter
     def num(self, value):
-        if len(value) > self.degree:
-            raise ValueError("Numerator bigger than degree!")
+        # if len(value) > self.degree:
+        #     raise ValueError(f"Numerator bigger than degree!\n len(num):{len(value)}, degree:{self.degree}")
         self._num = value
         
     @property
@@ -72,8 +67,8 @@ class IdentifyIt:
     
     @den.setter
     def den(self, value):
-        if len(value) > self.degree:
-            raise ValueError("Denumerator bigger than degree!")
+        # if len(value) > self.degree:
+        #     raise ValueError("Denumerator bigger than degree!")
         self._den = value
 
     @property
@@ -92,6 +87,13 @@ class IdentifyIt:
     @property
     def y_m(self):
         self.x_m, self._y_m = control.step_response(self.model, self.x[-1])
+        return self._y_m
+
+    @property
+    def error(self):
+        if isinstance(self.y, np.ndarray) and isinstance(self.y_m, np.ndarray):
+            return np.sum((self.y_m - self.y)**2)
+        raise TypeError("Type mismath")
 
     def __init__(self, x:list, y:list, degree:int, method:int):
         self.x = x
@@ -99,8 +101,25 @@ class IdentifyIt:
         self.degree = degree
         self.method = method
         self.iscont = True
+        self.run_method()
 
-    def load_x_y_from_file(self, file_path):
+
+    def run_method(self):
+        print('Running method...')
+        match self.method:
+            case 1:
+                print('LSM is runing...')
+                self.lsm(self.x, self.y, self.degree)
+            case 2:
+                print('VIM is runing...')
+                self.vim(self.x, self.y, self.degree)
+            case 3:
+                print('GRAD is runing...')
+                self.grad(self.x, self.y, self.degree)
+            case _:
+                raise ValueError("Wrong Method Choosen")
+
+    def load_xy(self, file_path):
         """Загрузка экспериментальных данных из файла"""
         self.x, self.y = np.loadtxt(file_path, delimiter=',', unpack=True)
 
