@@ -101,12 +101,13 @@ class IdentifyIt:
     def __repr__(self) -> str:
         return f"num:{self.num}\ndenum:{self.den}\nerror:{self.error}\nIs cont.:{self.iscont}"
 
-    def __init__(self, x:list, y:list, degree:int, method:int):
+    def __init__(self, x:list, y:list, degree:int, method:int, u:list=None):
         self.x = x
         self.y = y
         self.degree = degree
         self.method = method
         self.iscont = True
+        self.u = u
         self.run_method()
 
 
@@ -137,7 +138,9 @@ class IdentifyIt:
         return res
     
 
-    def lsm(self, t, y, degree):
+    def lsm(self, t, y, degree, u=None):
+        if u is None:
+            u = np.ones_like(y)
         N = len(t)
         phi = np.zeros((N-1,2*degree))
         for i in range(N-1):
@@ -151,7 +154,7 @@ class IdentifyIt:
                 if i + degree - j <= 0:
                     phi[i][j] = 0
                 else:
-                    phi[i][j] = 1
+                    phi[i][j] = u[i]
         Y = y[1:N]
         B = np.dot(phi.T,Y)
         A = np.dot(phi.T,phi)
