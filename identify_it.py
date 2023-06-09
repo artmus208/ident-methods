@@ -4,7 +4,6 @@
 # TODO:
 # [x]: Подготовить методы для тестирования
 # [x]: Протестировать методы
-# [ ]: Подготовить JSON-графика для Plotly
 
 
 from enum import Enum
@@ -94,8 +93,12 @@ class IdentifyIt:
 
     @property
     def error(self):
+        # Ниже код, нужен для выравнивания длин двух векторов
+        y_m, y = self.y_m, self.y
+        min_len = min(len(y_m), len(y))
+        y_m, y = y_m[:min_len], y[:min_len]
         if isinstance(self.y, np.ndarray) and isinstance(self.y_m, np.ndarray):
-            return np.sum((self.y_m - self.y)**2)
+            return np.sum((y_m - y)**2)
         raise TypeError("Type mismath")
 
     def __repr__(self) -> str:
@@ -104,6 +107,7 @@ class IdentifyIt:
     def __init__(self, x:list, y:list, degree:int, method:int, u:list=None):
         self.x = x
         self.y = y
+        self.u = u
         self.degree = degree
         self.method = method
         self.iscont = True
@@ -116,7 +120,7 @@ class IdentifyIt:
         match self.method:
             case 1:
                 print('LSM is runing...')
-                self.lsm(self.x, self.y, self.degree)
+                self.lsm(self.x, self.y, self.degree, self.u)
             case 2:
                 print('VIM is runing...')
                 self.vim(self.x, self.y, self.degree)
@@ -150,7 +154,7 @@ class IdentifyIt:
                 else:
                     phi[i][j] = -y[i-j]
         for i in range(N-1):
-            for j in range(degree,2*degree):
+            for j in range(degree, 2*degree):
                 if i + degree - j <= 0:
                     phi[i][j] = 0
                 else:
