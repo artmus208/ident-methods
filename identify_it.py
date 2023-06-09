@@ -85,7 +85,11 @@ class IdentifyIt:
 
     @property
     def y_m(self):
-        self.x_m, self._y_m = control.step_response(self.model, np.linspace(self.x[0], self.x[-1], len(self.x)))
+        # self.x_m, self._y_m = control.step_response(self.model, np.linspace(self.x[0], self.x[-1], len(self.x)))
+        if not self.iscont:
+            self.x_m, self._y_m = control.step_response(self.model, self.x[-1])
+        else:
+            self.x_m, self._y_m = control.step_response(self.model, np.linspace(self.x[0], self.x[-1], len(self.x)))
         return self._y_m
 
     @property
