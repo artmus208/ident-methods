@@ -11,7 +11,7 @@ def load(filepath):
 # [x] сравнить то, что выдало ВИМ и то, что выдал метод в этом файле
 #   интеграл считается верно
 class rim:
-    def __init__(self, x=0, y=0, degree=0, eps=1e-3, u=0, active=True) -> None:
+    def __init__(self, x=0, y=0, degree=0, eps=1e-3, u=None) -> None:
         self.eps = eps # погрешность для ВИМ
         self.x = x # вектор времени из временного ряда
         self.y = y # вектор значений выхода объекта
@@ -25,7 +25,7 @@ class rim:
             d_max=self.d_max,
             N=len(self.x)
         )
-        if active:
+        if self.u is None:
             self.F = self.get_F_active()
         else:
             self.F = self.get_F_passive()

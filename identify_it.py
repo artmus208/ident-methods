@@ -12,6 +12,7 @@ import numpy as np
 import scipy.linalg as linalg
 
 from grad import Grad
+from rim import rim
 
 class Methods(Enum):
     lsm = 1,
@@ -172,38 +173,14 @@ class IdentifyIt:
         return [self.num, self.den]
 
 
-    def vim(self, t, y, degree=1):
-        eps = 0.001
-        d_min = -np.log(eps) / t[-1]
-        n = len(y)
-        m = degree * 2
-        d = np.zeros(n)
-        d_max = d_min * 10
-        for i in range(len(d)):
-            d[i] = d_min + i * (d_max - d_min)/len(d)
-        Wd = np.zeros(len(d))
-        for i in range(len(d)):
-            s = 0
-            for j in range(n):
-                s += y[j] * np.exp(-d[i] * t[j]) * 0.01
-            Wd[i] = d[i] * s
-
-        f = np.zeros((n, m), dtype = 'double')
-        for i in range(n):
-            for j in range(1, degree+1):
-                f[i][j-1] = d[i] ** (degree - j)
-            for j in range(1, degree+1):
-                f[i][degree + j - 1] = (-d[i] ** (degree - j + 1)) * Wd[i]
-        
-        f_t = np.transpose(f)
-        left = np.dot(f_t, f)
-        right = np.dot(f_t, Wd)
-        A = linalg.solve(left, right)
-        A = list(A)
-        A.append(1)
-        self.num = A[:degree]
-        self.den = A[degree:]
+    def vim(self, t, y, degree, eps=1e-3, u=None):
+        rim1 = rim(t, y, degree, eps, u=u)
+        self.num = rim1.num
+        self.den = rim1.den
+        self.iscont = True
         return [self.num, self.den]
+        
+        
 
     def grad(self, t, y, degree=1):
         g = Grad(t, y, degree)
