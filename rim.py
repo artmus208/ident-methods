@@ -34,6 +34,7 @@ class rim:
         self.A = self.get_A()
         self.num = None
         self.den = None
+        self.solve()
     
     def solve(self):
         At = np.transpose(self.A)

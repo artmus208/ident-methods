@@ -85,7 +85,10 @@ class IdentifyIt:
 
     @property
     def y_m(self):
-        # self.x_m, self._y_m = control.step_response(self.model, np.linspace(self.x[0], self.x[-1], len(self.x)))
+        
+        # TIPS:
+        # тут надо добавить флаг isActive, если оно тру, то надо возвращать step_response
+        # а если false, то forced response
         if not self.iscont:
             self.x_m, self._y_m = control.step_response(self.model, self.x[-1])
         else:
@@ -113,23 +116,24 @@ class IdentifyIt:
         self.method = method
         self.iscont = True
         self.u = u
+        self.eps = 1e-3
         self.run_method()
 
 
     def run_method(self):
         print('Running method...')
-        match self.method:
-            case 1:
-                print('LSM is runing...')
-                self.lsm(self.x, self.y, self.degree, self.u)
-            case 2:
-                print('VIM is runing...')
-                self.vim(self.x, self.y, self.degree)
-            case 3:
-                print('GRAD is runing...')
-                self.grad(self.x, self.y, self.degree)
-            case _:
-                raise ValueError("Wrong Method Choosen")
+        if self.method == 1:
+            print('LSM is runing...')
+            self.lsm(self.x, self.y, self.degree, self.u)
+        elif self.method == 2:
+            print('VIM is runing...')
+            self.vim(self.x, self.y, self.degree)
+        elif self.method == 3:
+            print('GRAD is runing...')
+            self.grad(self.x, self.y, self.degree)
+        else:
+            raise ValueError("Wrong Method Choosen")
+        print("Method has been worked")
 
     def load_xy(self, file_path):
         """Загрузка экспериментальных данных из файла"""
@@ -173,10 +177,10 @@ class IdentifyIt:
         return [self.num, self.den]
 
 
-    def vim(self, t, y, degree, eps=1e-3, u=None):
-        rim1 = rim(t, y, degree, eps, u=u)
-        self.num = rim1.num
-        self.den = rim1.den
+    def vim(self, t, y, degree, u=None):
+        rim1 = rim(t, y, degree, self.eps, u=u)
+        self.num = rim1.num.tolist()
+        self.den = rim1.den.tolist()
         self.iscont = True
         return [self.num, self.den]
         
