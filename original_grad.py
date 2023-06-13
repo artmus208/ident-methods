@@ -124,11 +124,6 @@ class GradientIdentification():
                     a = max(a, a1)
                     b = min(b,b1)
             step = self.min_fun_split(a,b)
-            tt = np.linspace(a,b,100)
-            yy = np.zeros(100)
-                
-            for j in range(len(tt)):
-                yy[j] = self.f1(tt[j])
                 
             for i in range(len(self.X)):
                 self.X[i] = self.X[i] - step * self.J[i]
