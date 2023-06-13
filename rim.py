@@ -13,7 +13,6 @@ def load(filepath):
 class rim:
     def __init__(self, x=0, y=0, degree=0, eps=1e-3, u=None) -> None:
         self.eps = eps # погрешность для ВИМ
-        print(eps)
         self.x = x # вектор времени из временного ряда
         self.y = y # вектор значений выхода объекта
         self.u = u # входной вектор
