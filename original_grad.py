@@ -3,11 +3,11 @@ from control.matlab import *
 import matplotlib.pyplot as plt
 
 
-class Identification():
+class GradientIdentification():
     def __init__(self, filePath, initParams, KMAX = 100) -> None:
         # data load:
         self.filePath = filePath
-        self.data = np.loadtxt(filePath)
+        self.data = np.loadtxt(filePath, delimiter=',')
         self.t = self.data[:,0]
         self.h = self.data[:,1]
         self.size = len(self.h)
@@ -47,7 +47,7 @@ class Identification():
         numm, denn = self.MakeCoefs(_X)
         sys_ = tf(numm, denn)
         t = np.linspace(0,self.t[-1],self.size)
-        yM, t = step(sys_,T=t)
+        yM, t = step(sys_, T=t)
         return t, yM 
 
     def I(self,_X):
@@ -134,8 +134,6 @@ class Identification():
                 self.X[i] = self.X[i] - step * self.J[i]
 
             epsCurrent = self.I(self.X)/I0
-
-            print("In GetMinimization: ", k)
             k += 1
         
         self.currentEps = epsCurrent
@@ -156,7 +154,11 @@ if __name__ == '__main__':
     k = int(input("Введите максимальное кол-во итераций: "))
     Tparam = 0.05
     xi = 1.0
-    m = Identification('h.txt',[0.0000001, 0.0000001, 2, 0.000001, Tparam**2, 2*xi*Tparam, 1], KMAX = k)
+    # Последний коэффициент в числителе д.б. равен установившемуся значению ПХ  
+    numerator = [0.0000001, 0.0000001, 2] # b1 b2 b3
+    # Последний коэффициент в знаменателе д.б. равен одному
+    denumerator = [0.000001, Tparam**2, 2*xi*Tparam, 1] # a0 a1 a2 a3
+    m = GradientIdentification('test_data/h.txt', numerator+denumerator, KMAX = k)
     print(m.num, m.den)
     print("============Start Minim=============")
     coefs = m.GetMinimization()
