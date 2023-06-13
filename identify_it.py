@@ -108,7 +108,7 @@ class IdentifyIt:
     def __repr__(self) -> str:
         return f"num:{self.num}\ndenum:{self.den}\nerror:{self.error}\nIs cont.:{self.iscont}"
 
-    def __init__(self, x:list, y:list, degree:int, method:int, u:list=None):
+    def __init__(self, x:list, y:list, degree:int, method:int, u:list=None, eps=1e-4):
         self.x = x
         self.y = y
         self.u = u
@@ -116,7 +116,7 @@ class IdentifyIt:
         self.method = method
         self.iscont = True
         self.u = u
-        self.eps = 1e-3
+        self.eps = eps
         self.run_method()
 
 
