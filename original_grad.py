@@ -4,12 +4,10 @@ import matplotlib.pyplot as plt
 
 
 class GradientIdentification():
-    def __init__(self, filePath, initParams, KMAX = 100) -> None:
+    def __init__(self, x, y, initParams, KMAX = 100) -> None:
         # data load:
-        self.filePath = filePath
-        self.data = np.loadtxt(filePath, delimiter=',')
-        self.t = self.data[:,0]
-        self.h = self.data[:,1]
+        self.t = x
+        self.h = y
         self.size = len(self.h)
         self.state = round(np.mean(self.h[int(0.2*self.size): ]))
         # coeffs load:
@@ -51,11 +49,8 @@ class GradientIdentification():
         return t, yM 
 
     def I(self,_X):
-        res = 0.0
         t, yM = self.StepResponseData(_X)   
-        for i in range(len(yM)):
-            res += (yM[i] - self.h[i])**2
-        return res
+        return  (yM-self.h) @ (yM-self.h)
 
     def Gradient(self):
         eps = 1e-6
@@ -153,7 +148,8 @@ if __name__ == '__main__':
     numerator = [0.0000001, 0.0000001, 2] # b1 b2 b3
     # Последний коэффициент в знаменателе д.б. равен одному
     denumerator = [0.000001, Tparam**2, 2*xi*Tparam, 1] # a0 a1 a2 a3
-    m = GradientIdentification('test_data/h.txt', numerator+denumerator, KMAX = k)
+    x, y = np.loadtxt("test_data/h.txt", delimiter=',', unpack=True)
+    m = GradientIdentification(x, y, numerator+denumerator, KMAX = k)
     print(m.num, m.den)
     print("============Start Minim=============")
     coefs = m.GetMinimization()
